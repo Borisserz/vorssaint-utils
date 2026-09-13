@@ -213,6 +213,7 @@ final class ShelfService: ObservableObject {
     private var dragBeganInDock = false
     private var dragSourceBundleIdentifier: String?
     private var activeInternalDragIDs: [UUID] = []
+    private weak var internalDragWindow: NSWindow?
     private var internalDragWasMerged = false
     /// The edge (and screen) a drag is currently dwelling near, before it has
     /// dwelled long enough to trigger a peek. Reset whenever the pointer
@@ -316,6 +317,7 @@ final class ShelfService: ObservableObject {
 
     func syncWithPreferences() {
         reloadAutomaticExclusions()
+        if NotchSupport.routesShelf() { hide(); hideDocked(); retractEdgePeek() }
         if AppFeature.shelf.isAvailable, UserDefaults.standard.bool(forKey: DefaultsKey.shelfEnabled) {
             syncHotkey()
             syncDragMonitor()
@@ -360,7 +362,8 @@ final class ShelfService: ObservableObject {
         let wanted = defaults.bool(forKey: DefaultsKey.shelfEnabled)
             && (defaults.bool(forKey: DefaultsKey.shelfShakeToOpen)
                 || defaults.bool(forKey: DefaultsKey.shelfDropZoneEnabled)
-                || defaults.bool(forKey: DefaultsKey.shelfEdgeDragEnabled))
+                || defaults.bool(forKey: DefaultsKey.shelfEdgeDragEnabled)
+                || NotchSupport.revealsShelfDrag())
         if wanted { startDragMonitor() } else { stopDragMonitor() }
         syncDockedShelf()
     }
@@ -446,6 +449,13 @@ final class ShelfService: ObservableObject {
                     self.beginDragGesture(with: event)
                 }
                 self.dragBeganInDock = self.dragBeganInDock || self.eventBelongsToDock(event)
+                if NotchSupport.routesShelf() {
+                    if self.automaticOpenAllowed, self.isContentDragActive() {
+                        NotchService.shared.fileDragChanged(true)
+                    }
+                    self.startDockedWatchdog()
+                    return
+                }
                 let defaults = UserDefaults.standard
                 if defaults.bool(forKey: DefaultsKey.shelfShakeToOpen) {
                     self.handleDrag(event)
@@ -467,6 +477,7 @@ final class ShelfService: ObservableObject {
     }
 
     private func stopDragMonitor() {
+        NotchService.shared.fileDragChanged(false)
         if let mouseMonitor { NSEvent.removeMonitor(mouseMonitor) }
         mouseMonitor = nil
         shakeSamples.removeAll()
@@ -537,6 +548,7 @@ final class ShelfService: ObservableObject {
     /// on the drag pasteboard, so a later gesture with an unseen start cannot
     /// mistake it for fresh content.
     private func closeDragGesture() {
+        if !isInternalDragActive { NotchService.shared.fileDragChanged(false) }
         sawGestureStart = false
         dragBaselineChangeCount = NSPasteboard(name: .drag).changeCount
     }
@@ -604,13 +616,13 @@ final class ShelfService: ObservableObject {
     var dockedVisible: Bool { dockedPanel?.isVisible == true }
 
     private var dockedFeatureOn: Bool {
-        AppFeature.shelf.isAvailable
+        !NotchSupport.routesShelf() && AppFeature.shelf.isAvailable
             && UserDefaults.standard.bool(forKey: DefaultsKey.shelfEnabled)
             && UserDefaults.standard.bool(forKey: DefaultsKey.shelfDropZoneEnabled)
     }
 
     private var edgeFeatureOn: Bool {
-        AppFeature.shelf.isAvailable
+        !NotchSupport.routesShelf() && AppFeature.shelf.isAvailable
             && UserDefaults.standard.bool(forKey: DefaultsKey.shelfEnabled)
             && UserDefaults.standard.bool(forKey: DefaultsKey.shelfEdgeDragEnabled)
     }
@@ -1275,7 +1287,11 @@ final class ShelfService: ObservableObject {
         }
     }
 
-    func beginInternalDrag(ids: [UUID]) {
+    func beginInternalDrag(ids: [UUID], from window: NSWindow?) {
+        internalDragWindow = window
+        if let window, window === NotchService.shared.presentationWindow {
+            NotchService.shared.fileDragChanged(true, internalDrag: true)
+        }
         activeInternalDragIDs = ids
         internalDragWasMerged = false
     }
@@ -1284,6 +1300,10 @@ final class ShelfService: ObservableObject {
         defer {
             activeInternalDragIDs = []
             internalDragWasMerged = false
+            if let window = internalDragWindow, window === NotchService.shared.presentationWindow {
+                NotchService.shared.fileDragChanged(false, internalDrag: true)
+            }
+            internalDragWindow = nil
         }
         guard dropAccepted, !internalDragWasMerged else { return [] }
         return activeInternalDragIDs
@@ -1292,6 +1312,9 @@ final class ShelfService: ObservableObject {
     /// Completes a tile drag in one place so removal, dismissal, pinning and
     /// internal Shelf merges cannot drift apart across the AppKit views.
     func completeInternalDrag(dropAccepted: Bool) {
+        let notch = NotchService.shared
+        let source = internalDragWindow
+        let fromNotch = source != nil && source === notch.presentationWindow
         let draggedIDs = finishInternalDrag(dropAccepted: dropAccepted)
         endInteraction()
         guard !draggedIDs.isEmpty else { return }
@@ -1307,10 +1330,14 @@ final class ShelfService: ObservableObject {
             dropAccepted: dropAccepted,
             draggedItemCount: draggedIDs.count,
             closeAfterDrop: defaults.bool(forKey: DefaultsKey.shelfCloseAfterDrop),
-            pinned: isPinned) {
-            if isVisible {
+            pinned: fromNotch ? notch.pinned : isPinned) {
+            if fromNotch {
+                if notch.expanded, notch.selected == .files, !notch.showingAppPanel, !notch.showingSections {
+                    notch.collapse()
+                }
+            } else if isVisible, let source, source === panel {
                 hide()
-            } else if dockedVisible {
+            } else if dockedVisible, let source, source === dockedPanel {
                 collapseDocked()
             }
         }
@@ -1375,14 +1402,19 @@ final class ShelfService: ObservableObject {
     }
 
 
-    func accept(draggingInfo: NSDraggingInfo) -> Bool {
+    /// Native destinations call this synchronously from performDragOperation,
+    /// while the sender can still fulfill legacy file promises.
+    func acceptDrop(pasteboard: NSPasteboard) -> Bool {
         guard AppFeature.shelf.isAvailable,
               UserDefaults.standard.bool(forKey: DefaultsKey.shelfEnabled) else { return false }
-        let pasteboard = draggingInfo.draggingPasteboard
         let receivers = filePromiseReceivers(from: pasteboard)
-        let accepted = receivers.isEmpty
+        return receivers.isEmpty
             ? accept(pasteboard: pasteboard)
             : beginPromisedFileReceive(receivers, additions: nonPromisedItems(from: pasteboard), mergeInto: nil)
+    }
+
+    func accept(draggingInfo: NSDraggingInfo) -> Bool {
+        let accepted = acceptDrop(pasteboard: draggingInfo.draggingPasteboard)
         if accepted, draggingInfo.draggingDestinationWindow === dockedPanel { dockDidAccept() }
         return accepted
     }
@@ -1504,9 +1536,21 @@ final class ShelfService: ObservableObject {
             alert.beginSheetModal(for: window)
         } else if let window = dockedPanel, window.isVisible {
             alert.beginSheetModal(for: window)
+        } else if let window = NotchService.shared.presentationWindow, window.isVisible {
+            alert.beginSheetModal(for: window)
         } else {
             alert.runModal()
         }
+    }
+
+    /// Generated files reuse the shelf's ordinary acceptance, capacity and thumbnails.
+    @discardableResult
+    func addFiles(_ urls: [URL]) -> Bool {
+        guard !urls.isEmpty, urls.allSatisfy(\.isFileURL) else { return false }
+        let pasteboard = NSPasteboard.withUniqueName()
+        defer { pasteboard.releaseGlobally() }
+        pasteboard.writeObjects(urls.map { $0 as NSURL })
+        return accept(pasteboard: pasteboard)
     }
 
     /// The pasteboard representation used when dragging an item out of the shelf.
@@ -2244,6 +2288,7 @@ final class ShelfService: ObservableObject {
     // MARK: - Panel
 
     func toggle() {
+        if NotchService.shared.openShelf(toggle: true) { return }
         isVisible ? hide() : summon()
     }
 
@@ -2264,6 +2309,7 @@ final class ShelfService: ObservableObject {
     func summon() {
         guard AppFeature.shelf.isAvailable,
               UserDefaults.standard.bool(forKey: DefaultsKey.shelfEnabled) else { return }
+        if NotchService.shared.openShelf() { return }
         let panel = ensurePanel()
         cancelAutoHide()
         position(panel)
