@@ -120,10 +120,15 @@ enum ShelfFilePromiseTests {
         let queuedReceiver = Receiver(["queued.txt"])
         queuedTransfer.receive([queuedReceiver])
         queuedReceiver.send(0)
-        // drain() on main can deliver the already-queued completion before cancel.
-        DispatchQueue.global().sync { queuedReceiver.drain() }
-        queuedTransfer.cancel(); pump(); queuedReceiver.drain()
-        expect(queuedResults == 0 && entries(queuedStore).isEmpty, "cancel wins over an already queued main-thread completion")
+        queuedReceiver.drain()
+        queuedTransfer.cancel()
+        // A single run loop pass failed this check intermittently on the
+        // macOS 26 CI runner; wait until the queued block has visibly run.
+        let queuedDeadline = Date().addingTimeInterval(3)
+        while queuedResults == 0, !entries(queuedStore).isEmpty, Date() < queuedDeadline { pump() }
+        queuedReceiver.drain()
+        expect(queuedResults == 0, "cancel wins over an already queued main-thread completion")
+        expect(entries(queuedStore).isEmpty, "the queued completion discards its copies after cancellation")
 
         let (errorIncoming, errorStore) = fixture("errors")
         var failed: ShelfFilePromiseTransfer.Result?
