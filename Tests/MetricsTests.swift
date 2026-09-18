@@ -18516,6 +18516,15 @@ struct MetricsTests {
             expect(ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "Notes")
                    == "Notes-3",
                    "file names can include the same %app token")
+            expect(ScreenshotSupport.expandedFileNameNeedsDefault(
+                    ScreenshotSupport.expandFileNamePattern("%app", date: patternDate, number: 0, appName: "")),
+                   "a bare %app with no app falls back to the default name")
+            expect(ScreenshotSupport.expandedFileNameNeedsDefault(
+                    ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "")),
+                   "an %app-%# with no app is only punctuation and a number")
+            expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
+                    ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "Notes")),
+                   "a filled %app keeps the expanded file name")
             expect(ScreenshotSupport.captureAppName(frontmostBundleID: "com.apple.Safari",
                                                     frontmostName: "Safari",
                                                     ownBundleID: "com.vorssaint.utils") == "Safari",

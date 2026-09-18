@@ -1114,6 +1114,16 @@ enum ScreenshotSupport {
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ":", with: "-")
     }
+    /// Whether an expanded file-name pattern left nothing usable — empty,
+    /// or only punctuation plus an optional number from "%#" — so the
+    /// default localized name should take over instead of writing ".png"
+    /// or "-3.png".
+    static func expandedFileNameNeedsDefault(_ expanded: String) -> Bool {
+        let trimmed = expanded.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return true }
+        return trimmed.range(of: #"^[\W_]*\d*$"#, options: .regularExpression) != nil
+    }
+
     /// Whether a file name pattern actually uses the number sequence, so
     /// callers know whether to advance and persist it.
     static func fileNamePatternUsesNumber(_ pattern: String) -> Bool {
