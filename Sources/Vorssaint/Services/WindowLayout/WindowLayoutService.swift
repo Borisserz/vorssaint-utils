@@ -775,7 +775,6 @@ final class WindowLayoutService: ObservableObject {
             target: target,
             visibleFrame: screen.visibleFrame,
             pointerOrigin: NSEvent.mouseLocation,
-            triggerKeyCode: registeredDirectionalShortcut?.keyCode,
             action: nil,
             manualOverride: nil)
         showDirectionalIndicator(at: NSEvent.mouseLocation, action: nil)
@@ -857,22 +856,24 @@ final class WindowLayoutService: ObservableObject {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let isAutorepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
             let allowManual = WindowDirectionalGestureSupport.shouldApplyKeyboardManualOverride(
-                keyCode: keyCode,
-                triggerKeyCode: session.triggerKeyCode,
                 isAutorepeat: isAutorepeat)
-            if allowManual, keyCode == 49 || keyCode == 36 || keyCode == 126 { // Space, Return, Up
-                session.manualOverride = .maximize
-                directionalSession = session
-                updateDirectionalIndicator(action: .maximize)
-                let preview = placement(for: .maximize, current: session.target.frame,
-                                        visibleFrame: session.visibleFrame).rect
-                showEdgeSnapPreview(frame: preview)
+            if keyCode == 49 || keyCode == 36 || keyCode == 126 { // Space, Return, Up
+                if allowManual {
+                    session.manualOverride = .maximize
+                    directionalSession = session
+                    updateDirectionalIndicator(action: .maximize)
+                    let preview = placement(for: .maximize, current: session.target.frame,
+                                            visibleFrame: session.visibleFrame).rect
+                    showEdgeSnapPreview(frame: preview)
+                }
                 return nil
-            } else if allowManual, keyCode == 46 || keyCode == 125 { // M, Down
-                session.manualOverride = .minimize
-                directionalSession = session
-                updateDirectionalIndicator(action: .minimize)
-                hideEdgeSnapPreview(immediately: true)
+            } else if keyCode == 46 || keyCode == 125 { // M, Down
+                if allowManual {
+                    session.manualOverride = .minimize
+                    directionalSession = session
+                    updateDirectionalIndicator(action: .minimize)
+                    hideEdgeSnapPreview(immediately: true)
+                }
                 return nil
             } else if keyCode == 53 { // Escape
                 cancelDirectionalGesture()
@@ -2006,7 +2007,6 @@ private struct WindowDirectionalSession {
     let target: WindowLayoutTarget
     let visibleFrame: NSRect
     let pointerOrigin: CGPoint
-    let triggerKeyCode: Int64?
     var action: WindowDirectionalAction?
     var manualOverride: WindowDirectionalAction?
 }

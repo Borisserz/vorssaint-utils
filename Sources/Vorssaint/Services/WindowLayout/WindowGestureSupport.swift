@@ -331,15 +331,12 @@ enum WindowDirectionalGestureSupport {
         return .bottomRight
     }
 
-    /// Holding the ring open keeps the trigger key auto-repeating. Those
-    /// repeats (and the trigger key itself) must not force maximize/minimize,
-    /// or the default ⌃⌥Space binding fights the pointer aim (#1566).
-    static func shouldApplyKeyboardManualOverride(keyCode: Int64,
-                                                  triggerKeyCode: Int64?,
-                                                  isAutorepeat: Bool) -> Bool {
-        if isAutorepeat { return false }
-        if let triggerKeyCode, keyCode == triggerKeyCode { return false }
-        return true
+    /// Holding the ring open keeps keys auto-repeating. Those repeats must not
+    /// force maximize/minimize, or the default ⌃⌥Space binding fights the
+    /// pointer aim (#1566). The event is still swallowed so repeats do not
+    /// leak to the front app.
+    static func shouldApplyKeyboardManualOverride(isAutorepeat: Bool) -> Bool {
+        !isAutorepeat
     }
 }
 
