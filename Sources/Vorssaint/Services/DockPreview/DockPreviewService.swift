@@ -1607,8 +1607,12 @@ final class DockPreviewPinnedPanel: ObservableObject, Identifiable {
 
     private func refreshWindows() {
         let previousIDs = windows.compactMap(\.windowID)
-        let refreshed = WindowEnumerator.listWindows(for: appPID, maximumCount: Self.maximumWindowCount)
-            .filter { $0.windowID != nil }
+        let refreshed = DockPreviewSupport.orderedWindows(
+            WindowEnumerator.listWindows(for: appPID, maximumCount: Self.maximumWindowCount)
+                .filter { $0.windowID != nil },
+            order: DockPreviewWindowOrder.fromDefaults(
+                orderByCreation: UserDefaults.standard.bool(
+                    forKey: DefaultsKey.dockPreviewOrderByCreation)))
         guard !refreshed.isEmpty else {
             closePreviewPanel()
             return
