@@ -18519,9 +18519,15 @@ struct MetricsTests {
             expect(ScreenshotSupport.expandedFileNameNeedsDefault(
                     ScreenshotSupport.expandFileNamePattern("%app", date: patternDate, number: 0, appName: "")),
                    "a bare %app with no app falls back to the default name")
-            expect(ScreenshotSupport.expandedFileNameNeedsDefault(
+            expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
                     ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "")),
-                   "an %app-%# with no app is only punctuation and a number")
+                   "punctuation plus a number from %# is kept as a real name")
+            expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
+                    ScreenshotSupport.expandFileNamePattern("%#", date: patternDate, number: 3, appName: "")),
+                   "a digit-only %# pattern keeps the numbered name")
+            expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
+                    ScreenshotSupport.expandFileNamePattern("%y%mo%d", date: patternDate, number: 0, appName: "")),
+                   "a date-only pattern keeps the expanded digits")
             expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
                     ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "Notes")),
                    "a filled %app keeps the expanded file name")
