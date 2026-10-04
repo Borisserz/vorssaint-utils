@@ -788,6 +788,15 @@ enum RadialMenuSupport {
         }
     }
 
+    /// Whether anything opens this wheel. The profile picked in Settings is
+    /// only the one being edited, so a wheel without a shortcut, a mouse
+    /// button or the trackpad tap never opens outside of Try it.
+    static func hasTrigger(_ profile: RadialMenuProfile) -> Bool {
+        GlobalShortcut(storageValue: profile.shortcut) != nil
+            || RadialMenuMouseTrigger.sanitized(profile.mouseButton) != .off
+            || profile.trackpadTap
+    }
+
     /// The mouse buttons the wheel is bound to right now, decoded from the
     /// stored buttons alone.
     ///

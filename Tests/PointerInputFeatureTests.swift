@@ -1459,6 +1459,16 @@ enum PointerInputFeatureTests {
                 && copiedWheel.items == shortcutTapWheel.items
                 && copiedWheel.shortcut.isEmpty && !copiedWheel.trackpadTap,
                "a duplicated wheel keeps the actions but leaves the shortcut and the trackpad tap to the original")
+        // #2614: a wheel picked in Settings opens only from its own triggers.
+        suite.expect(RadialMenuSupport.hasTrigger(shortcutTapWheel)
+                && RadialMenuSupport.hasTrigger(RadialMenuProfile(shortcut: GlobalShortcut.radialMenuDefault.storageValue))
+                && RadialMenuSupport.hasTrigger(RadialMenuProfile(mouseButton: RadialMenuMouseTrigger.button(4).rawValue))
+                && RadialMenuSupport.hasTrigger(tapWheel),
+               "a shortcut, a mouse button or the trackpad tap each open a wheel")
+        suite.expect(!RadialMenuSupport.hasTrigger(copiedWheel)
+                && !RadialMenuSupport.hasTrigger(RadialMenuProfile(shortcut: "not a shortcut",
+                                                                   mouseButton: RadialMenuMouseTrigger.off.rawValue)),
+               "a wheel without a shortcut, a mouse button or the tap has nothing that opens it")
         suite.expect(MiddleClickSupport.tapShouldFire(duration: 0.15, maxMovement: 0.01, maxSpreadChange: 0.01,
                                                 exceededFingerCount: false, buttonPressedDuring: false,
                                                 positionUnavailable: false, systemDragGestureEnabled: true,

@@ -109,6 +109,11 @@ struct RadialMenuSettings: View {
 
             Section {
                 profileManagementRow
+                if enabled, !RadialMenuSupport.hasTrigger(selectedProfile) {
+                    Text(text.profileNoTrigger)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 profileConfigurationRows
             } header: {
                 Text(text.profilesHeader)
