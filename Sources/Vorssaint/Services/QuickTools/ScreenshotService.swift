@@ -881,8 +881,9 @@ enum ScreenshotLastCaptureStore {
                     at: fileURL.deletingLastPathComponent(),
                     withIntermediateDirectories: true)
                 try data.write(to: fileURL, options: .atomic)
+                try Data(capture.appName.utf8).write(to: appNameURL(beside: fileURL), options: .atomic)
                 guard isCurrent(operation) else {
-                    try? FileManager.default.removeItem(at: fileURL)
+                    removeFiles(at: fileURL)
                     return
                 }
                 finish(operation, fileURL: fileURL, removeFile: false)
@@ -907,7 +908,9 @@ enum ScreenshotLastCaptureStore {
         else { return nil }
         let imageOptions = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, imageOptions) else { return nil }
-        return ScreenshotSelectionController.Capture(image: image, scale: scale, anchorRect: .zero)
+        let appName = ScreenshotSupport.lastCaptureAppName(from: try? Data(contentsOf: appNameURL(beside: fileURL)))
+        return ScreenshotSelectionController.Capture(image: image, scale: scale, anchorRect: .zero,
+                                                     appName: appName)
     }
 
     static func clear() {
@@ -916,7 +919,16 @@ enum ScreenshotLastCaptureStore {
         pendingCapture = nil
         stateLock.unlock()
         guard let fileURL else { return }
+        removeFiles(at: fileURL)
+    }
+
+    private static func appNameURL(beside fileURL: URL) -> URL {
+        ScreenshotSupport.lastCaptureAppNameURL(beside: fileURL)
+    }
+
+    private static func removeFiles(at fileURL: URL) {
         try? FileManager.default.removeItem(at: fileURL)
+        try? FileManager.default.removeItem(at: appNameURL(beside: fileURL))
     }
 
     private static func isCurrent(_ operation: Int) -> Bool {
@@ -928,7 +940,7 @@ enum ScreenshotLastCaptureStore {
     private static func finish(_ operation: Int, fileURL: URL, removeFile: Bool) {
         guard isCurrent(operation) else { return }
         if removeFile {
-            try? FileManager.default.removeItem(at: fileURL)
+            removeFiles(at: fileURL)
         }
         stateLock.lock()
         if generation == operation {

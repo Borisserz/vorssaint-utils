@@ -18531,6 +18531,14 @@ struct MetricsTests {
             expect(!ScreenshotSupport.expandedFileNameNeedsDefault(
                     ScreenshotSupport.expandFileNamePattern("%app-%#", date: patternDate, number: 3, appName: "Notes")),
                    "a filled %app keeps the expanded file name")
+            let latestImage = URL(fileURLWithPath: "/tmp/cache/LatestScreenshot.png")
+            expect(ScreenshotSupport.lastCaptureAppNameURL(beside: latestImage)
+                   == URL(fileURLWithPath: "/tmp/cache/LatestScreenshot.txt"),
+                   "the latest screenshot's app is stored beside its PNG")
+            expect(ScreenshotSupport.lastCaptureAppName(from: Data("Safari\n".utf8)) == "Safari"
+                   && ScreenshotSupport.lastCaptureAppName(from: nil) == ""
+                   && ScreenshotSupport.lastCaptureAppName(from: Data([0xFF, 0xFE])) == "",
+                   "Edit latest screenshot reads back the app it was taken in, or none")
             expect(ScreenshotSupport.captureAppName(frontmostBundleID: "com.apple.Safari",
                                                     frontmostName: "Safari",
                                                     ownBundleID: "com.vorssaint.utils") == "Safari",

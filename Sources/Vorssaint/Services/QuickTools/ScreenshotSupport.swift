@@ -1121,6 +1121,17 @@ enum ScreenshotSupport {
         expanded.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// The latest screenshot is kept as a bare PNG, so the app it was taken
+    /// in sits beside it; Edit latest screenshot reads it back for %app.
+    static func lastCaptureAppNameURL(beside imageURL: URL) -> URL {
+        imageURL.deletingPathExtension().appendingPathExtension("txt")
+    }
+
+    static func lastCaptureAppName(from data: Data?) -> String {
+        guard let data, let name = String(data: data, encoding: .utf8) else { return "" }
+        return name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     /// Whether a file name pattern actually uses the number sequence, so
     /// callers know whether to advance and persist it.
     static func fileNamePatternUsesNumber(_ pattern: String) -> Bool {
