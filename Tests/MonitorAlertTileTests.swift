@@ -61,8 +61,9 @@ enum MonitorAlertTileTests {
         }
         suite.expect(click(NSPoint(x: 30, y: stepper.midY)) == 1 && !state.on, "the limit's line switches it")
         _ = click(NSPoint(x: 3, y: bounds.height / 2))
-        suite.expect(click(NSPoint(x: stepper.midX, y: stepper.minY + 3)) == 0 && state.on && state.limit == 85,
-                     "the stepper moves the limit without switching the alert off")
+        let stepperSwitches = click(NSPoint(x: stepper.midX, y: stepper.minY + 3))
+        suite.expect(stepperSwitches == 0 && state.on, "a click on the stepper leaves the alert on")
+        suite.expect(state.limit == 85, "the stepper moves the limit: got \(state.limit)")
     }
 
     private static func settle(_ seconds: TimeInterval = 0.2) {
