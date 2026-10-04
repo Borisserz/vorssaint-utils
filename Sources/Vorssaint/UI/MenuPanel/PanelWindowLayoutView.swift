@@ -31,8 +31,17 @@ struct PanelWindowLayoutView: View {
         VStack(alignment: .leading, spacing: 10) {
             header
             intro
-            actionGroup(title: text.halves, actions: [.leftHalf, .rightHalf, .topHalf, .bottomHalf])
-            actionGroup(title: text.thirds, actions: [.leftThird, .centerThird, .rightThird, .leftTwoThirds, .rightTwoThirds])
+            actionGroup(title: text.halves, actions: [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .centerHalf])
+            actionGroup(title: text.thirds, actions: [
+                .leftThird, .centerThird, .rightThird, .leftTwoThirds, .rightTwoThirds, .centerTwoThirds,
+                .topThird, .middleThird, .bottomThird, .topTwoThirds, .bottomTwoThirds,
+            ])
+            actionGroup(title: text.quarterRows, actions: [
+                .topQuarter, .upperMiddleQuarter, .lowerMiddleQuarter, .bottomQuarter,
+            ])
+            actionGroup(title: text.quarterColumns, actions: [
+                .leftQuarter, .leftMiddleQuarter, .rightMiddleQuarter, .rightQuarter,
+            ])
             actionGroup(title: text.sixths, actions: [
                 .topLeftSixth, .topCenterSixth, .topRightSixth,
                 .bottomLeftSixth, .bottomCenterSixth, .bottomRightSixth,
