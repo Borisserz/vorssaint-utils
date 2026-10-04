@@ -266,27 +266,31 @@ private struct AlertTile: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
+                            .allowsHitTesting(false)
                         Spacer(minLength: 0)
                         Stepper(limit.label, value: limit.value, in: limit.range, step: limit.step)
                             .labelsHidden()
                             .controlSize(.mini)
                             .accessibilityValue(limit.formatValue(limit.value.wrappedValue))
-                            // The stepper's clicks also reach the tile's tap
-                            // below; this one claims them first.
-                            .onTapGesture {}
                     }
                 }
             }
             .padding(10)
             .frame(maxWidth: .infinity, minHeight: 84, alignment: .topLeading)
+            // Behind the content, not on it: a tap on a view around the
+            // stepper also takes the stepper's clicks on macOS 15.
+            .background {
+                Color.clear
+                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .onTapGesture { isOn.toggle() }
+            }
             .background(isOn ? Color.accentColor.opacity(0.10) : Color.secondary.opacity(0.05),
                         in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .strokeBorder(isOn ? Color.accentColor.opacity(0.55) : .clear, lineWidth: 1)
+                    .allowsHitTesting(false)
             }
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .onTapGesture { isOn.toggle() }
             Image(systemName: isOn ? "checkmark.circle.fill" : "plus.circle")
                 .font(.system(size: 15))
                 .foregroundStyle(isOn ? Color.accentColor : .secondary)
