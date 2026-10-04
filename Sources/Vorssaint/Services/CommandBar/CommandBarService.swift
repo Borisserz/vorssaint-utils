@@ -157,6 +157,7 @@ final class CommandBarService: ObservableObject {
     private var windowEntries: [CommandBarEntry] = [] { didSet { foldedSections[.windows] = nil } }
     private var quitEntries: [CommandBarEntry] = [] { didSet { foldedSections[.quit] = nil } }
     private var uninstallEntries: [CommandBarEntry] = [] { didSet { foldedSections[.uninstallApps] = nil } }
+    private var uninstallableAppIDs: Set<String> = []
     /// The raw scan is what gets cached; the rows are rebuilt on every open so
     /// the live dot and the running apps are never a stale picture.
     private var cachedApps: [InstalledApps.InstalledApp] = []
@@ -185,6 +186,7 @@ final class CommandBarService: ObservableObject {
     private var uninstallSelectionEntries: [CommandBarEntry] = [] { didSet { foldedSections[.uninstallSelection] = nil } }
     private var uninstallSelectionLoading = false
     private var uninstallFinderRequestID: UUID?
+    private var pendingHomebrewRemoval: AppUninstaller.HomebrewRemovalConfirmation?
     /// True while the bar is closing, so nothing is rebuilt on the way out.
     private var isTearingDown = false
     private var menusLoading = false
@@ -226,6 +228,7 @@ final class CommandBarService: ObservableObject {
     private var restartURL: URL?
 
     private init() {
+        CommandBarLearning.discardLegacyQueryHabits()
         hotkey.onPress = { [weak self] in self?.toggle() }
         scriptRunner.onResult = { [weak self] in self?.refreshResults() }
         fileSearch.onResult = { [weak self] in self?.refreshResults() }
@@ -235,12 +238,12 @@ final class CommandBarService: ObservableObject {
 
     func syncWithPreferences() {
         let available = AppFeature.commandBar.isAvailable
-        if available { CommandBarQueryHabits.warmInstallationKey() }
         let enabled = available
             && UserDefaults.standard.bool(forKey: DefaultsKey.commandBarShortcutEnabled)
         let shortcut = GlobalShortcut.saved(for: DefaultsKey.commandBarShortcut,
                                             fallback: .commandBarDefault)
-        shortcutRegistrationFailed = !hotkey.sync(enabled: enabled, shortcut: shortcut)
+        shortcutRegistrationFailed = !hotkey.sync(enabled: enabled, shortcut: shortcut,
+                                                  storageKey: DefaultsKey.commandBarShortcut)
         reloadPreferenceCaches()
         syncRowHotkeys()
         if available {
@@ -274,6 +277,7 @@ final class CommandBarService: ObservableObject {
             normalizedByID = [:]
             entriesByStableKey = [:]
             cachedApps = []
+            uninstallableAppIDs = []
             pendingAppShortcut.cancel()
             windowsLoadedAt = nil
             rows = []
@@ -313,13 +317,7 @@ final class CommandBarService: ObservableObject {
         reloadPreferenceCaches()
         query = ""
         refreshResults()
-        CommandBarQueryHabits.warmInstallationKey { [weak self] in
-            DispatchQueue.main.async {
-                guard let self, self.presentationID == id, self.isVisible else { return }
-                self.preparedHabitQuery.reset()
-                self.refreshResults()
-            }
-        }
+        adoptASCIIInputSource()
         present(panel)
         // Ordering the prepared panel is the keystroke path. Home is filled on
         // the next main-loop turn, when a close or newer opening can supersede it.
@@ -419,6 +417,7 @@ final class CommandBarService: ObservableObject {
             rows = []
             sectionTitles = [:]
         }
+        restoreSuspendedInputSource()
         removeMonitors()
         panel?.orderOut(nil)
         // Leaving mid-review through this path (global shortcut, outside
@@ -461,6 +460,73 @@ final class CommandBarService: ObservableObject {
         query = ""
         presentationLifecycle.hide()
         clearIndex()
+    }
+
+    // MARK: - The bar's own keyboard layout
+
+    /// The input source the bar switched away from on open, put back on
+    /// close. Recorded whenever TIS accepts the switch: a switch that never
+    /// landed restores a source the bar never left — a no-op — while a
+    /// missing record would strand the typist on the borrowed layout.
+    private var suspendedInputSourceID: String?
+
+    var hasBorrowedInputSource: Bool {
+        suspendedInputSourceID != nil
+    }
+
+    /// One-shot switch to the first enabled ASCII layout, read fresh on every
+    /// open like every other preference on this path. TIS talks to the
+    /// text-input server from the main thread, the way the Super key switch
+    /// already does.
+    private func adoptASCIIInputSource() {
+        let apply = {
+            guard UserDefaults.standard.bool(forKey: DefaultsKey.commandBarASCIILayoutEnabled) else {
+                self.restoreSuspendedInputSource()
+                return
+            }
+            let currentID = InputSourceSelection.currentSourceID()
+            guard let target = InputSourceSelection.asciiLayoutID(
+                currentID: currentID,
+                snapshots: InputSourceSelection.snapshots())
+            else { return }
+            // The record belongs to acceptance, not the landing: a switch
+            // that never landed only restores a source the bar never left —
+            // a no-op — while a missed record strands the typist on the
+            // borrowed layout.
+            guard InputSourceSelection.select(sourceID: target) else { return }
+            self.suspendedInputSourceID = currentID
+        }
+        if Thread.isMainThread {
+            apply()
+        } else {
+            DispatchQueue.main.sync(execute: apply)
+        }
+    }
+
+    private func restoreSuspendedInputSource() {
+        guard let sourceID = suspendedInputSourceID else { return }
+        // The switch waits for the next turn of the main loop. A close reached
+        // through a key (Esc, Return, ⌘,) runs inside that key event's own
+        // dispatch, and TIS quietly ignores a source switch asked for there —
+        // the same hide() restores fine from a click or the hotkey, which
+        // stand outside any key event. Waiting is safe: the presentation id
+        // is captured now, and beginPresentation replaces it on the next
+        // open. Keep the original source until restoration actually runs:
+        // reopening while ASCII is still active borrows the same source.
+        let presentationID = self.presentationID
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.presentationID == presentationID,
+                  self.suspendedInputSourceID == sourceID else { return }
+            self.restoreBorrowedInputSource()
+        }
+    }
+
+    /// The termination path cannot wait for another main-loop turn. Keep a
+    /// refused restoration pending so a later close or termination can retry.
+    func restoreBorrowedInputSource() {
+        guard let sourceID = suspendedInputSourceID,
+              InputSourceSelection.select(sourceID: sourceID) else { return }
+        suspendedInputSourceID = nil
     }
 
     /// Re-fits the panel to its content as the result list grows and
@@ -572,7 +638,12 @@ final class CommandBarService: ObservableObject {
             hotkey.onPress = { [weak self] in self?.runRow(withStableKey: key) }
             // A combination another app already holds is refused by the system.
             // Saying so beats a row that shows a key it will never answer to.
-            if !hotkey.sync(enabled: true, shortcut: shortcut) { refused.insert(key) }
+            // Row combinations live inside one dictionary, so a claim is
+            // named by the row it belongs to.
+            if !hotkey.sync(enabled: true, shortcut: shortcut,
+                            storageKey: "\(DefaultsKey.commandBarRowShortcuts).\(key)") {
+                refused.insert(key)
+            }
             rowHotkeys.append(hotkey)
             index += 1
         }
@@ -597,6 +668,15 @@ final class CommandBarService: ObservableObject {
                 return
             }
             NSSound.beep()
+            return
+        }
+        // A script marked to run directly does its work at once, with no
+        // argument and nothing on screen. Direct execution bypasses result
+        // filtering. Do nothing when the row is hidden or Links is disabled.
+        if let link = CommandBarLinks.directRunScript(forStableKey: key, in: CommandBarLinks.decode(
+            UserDefaults.standard.data(forKey: DefaultsKey.commandBarLinks))) {
+            guard !hiddenCache.contains(key), isEnabled(.links) else { return }
+            CommandBarCatalog.runScriptDirectly(link)
             return
         }
         // A row that would confirm, ask for input, or keep the field visible
@@ -833,8 +913,6 @@ final class CommandBarService: ObservableObject {
             from: UserDefaults.standard.string(forKey: DefaultsKey.commandBarDisabledSources) ?? "")
         usageCache = CommandBarUsage.decode(
             UserDefaults.standard.string(forKey: DefaultsKey.commandBarUsage))
-        queryHabitStore.reload(
-            UserDefaults.standard.string(forKey: DefaultsKey.commandBarQueryHabits))
         shortcutCache = rowShortcuts
         compactMode = UserDefaults.standard.bool(forKey: DefaultsKey.commandBarCompactMode)
         hasCustomPosition = positionOffset != .zero
@@ -959,8 +1037,6 @@ final class CommandBarService: ObservableObject {
         UserDefaults.standard.set(CommandBarUsage.encode(usage), forKey: DefaultsKey.commandBarUsage)
         queryMemory.forget(id: entry.id)
         queryHabitStore.remove(resultID: entry.id)
-        UserDefaults.standard.set(CommandBarQueryHabits.encode(queryHabitStore.store),
-                                  forKey: DefaultsKey.commandBarQueryHabits)
         refreshAfterPreferenceChange()
     }
 
@@ -1078,7 +1154,9 @@ final class CommandBarService: ObservableObject {
                                                   runningBundleIDs: bundleIDs,
                                                   runningPaths: paths,
                                                   bar: bar)
-        uninstallEntries = CommandBarCatalog.uninstallEntries(cachedApps, bar: bar)
+        uninstallEntries = CommandBarCatalog.uninstallEntries(cachedApps,
+                                                              uninstallable: uninstallableAppIDs,
+                                                              bar: bar)
         if index { indexEntries() }
     }
 
@@ -1589,9 +1667,12 @@ final class CommandBarService: ObservableObject {
         // "st" must not answer "Storage" over what the person meant.
         let firstToken = foldedQuery.split(separator: " ").first.map(String.init) ?? ""
 
+        // A color typed on its own is placed once the rest of the list is
+        // known; a conversion asked for with "to" leads like any answer.
+        let colorPreview = answer?.id == "color.preview" ? answer : nil
         var counts: [String: Int] = [:]
         var result: [CommandBarEntry] = []
-        if let answer { result.append(answer) }
+        if let answer, colorPreview == nil { result.append(answer) }
         if let openURL { result.append(openURL) }
         if let scriptAnswer { result.append(scriptAnswer) }
         for index in ranked {
@@ -1608,6 +1689,11 @@ final class CommandBarService: ObservableObject {
             result.append(entry)
             if result.count >= 12 { break }
         }
+        if let colorPreview {
+            result.insert(colorPreview, at: CommandBarSearch.colorPreviewIndex(
+                rowTitles: result.map(\.title), query: trimmed))
+            if result.count > 12 { result.removeLast() }
+        }
         return result
     }
 
@@ -1621,10 +1707,19 @@ final class CommandBarService: ObservableObject {
         select(next < 0 ? next + rows.count : next)
     }
 
-    /// Tab completes what is selected into the field, the way every launcher
-    /// does, so the next keystroke refines instead of starting over.
+    /// Tab reuses a calculator answer or completes the selected search result.
     func completeSelection() {
-        guard case .search = mode, let entry = selectedEntry, !entry.isAnswer else { return }
+        guard case .search = mode, let entry = selectedEntry else { return }
+        if entry.id == "math.result", let result = CommandBarMath.evaluate(query) {
+            let completion = CommandBarMath.reusableExpression(for: result)
+            if let editor = panel?.firstResponder as? NSTextView, editor.string == query {
+                // Native replacement keeps undo and puts the caret after the reused value.
+                editor.insertText(completion, replacementRange: NSRange(location: 0, length: (query as NSString).length))
+            }
+            query = completion
+            return
+        }
+        guard !entry.isAnswer else { return }
         if queryBeforeCompletion == nil { queryBeforeCompletion = query }
         let completion = CommandBarCompletion.completedQuery(
             current: query, title: entry.title, matchTitle: entry.matchTitle)
@@ -1714,7 +1809,7 @@ final class CommandBarService: ObservableObject {
                     self?.confirmForceQuit(running, name: app.name)
                 })
             }
-            if AppFeature.uninstaller.isAvailable, !app.isSystem {
+            if AppFeature.uninstaller.isAvailable, UninstallerSupport.selection(for: app.url) != nil {
                 actions.append(RowAction(id: "uninstallApp",
                                          title: String(format: bar.uninstallAppFormat, app.name),
                                          symbolName: "trash") { [weak self] in
@@ -2000,9 +2095,13 @@ final class CommandBarService: ObservableObject {
         KillProcessService.shared.killTree(process, force: false)
     }
 
+    /// The row is offered only for an app the shared checks accept, so the
+    /// one way `select` still says no is a removal already running. The page
+    /// opens on that removal instead of the bar closing on nothing.
     private func openUninstaller(for url: URL) {
         hide()
-        AppUninstaller.shared.select(appURL: url)
+        let uninstaller = AppUninstaller.shared
+        guard uninstaller.select(appURL: url) || uninstaller.isRemoving else { return }
         SettingsRouter.shared.page = .uninstaller
         appDelegate()?.openSettingsWindow()
     }
@@ -2015,7 +2114,8 @@ final class CommandBarService: ObservableObject {
     private func confirmUninstallReview(entryID: String) {
         let uninstaller = AppUninstaller.shared
         guard uninstaller.phase == .results, !uninstaller.isRemoving else { return }
-        if uninstaller.selectedHomebrewPackage != nil {
+        if let confirmation = uninstaller.homebrewRemovalConfirmation {
+            pendingHomebrewRemoval = confirmation
             mode = .uninstallHomebrewConfirm(entryID: entryID)
             refreshPanelLayout()
             return
@@ -2027,7 +2127,10 @@ final class CommandBarService: ObservableObject {
     /// checklist, which shows its live progress the same way the menu panel
     /// already does while `AppUninstaller` waits on it.
     private func confirmUninstallHomebrewRemoval(entryID: String) {
-        AppUninstaller.shared.removeSelectedWithHomebrew()
+        if let confirmation = pendingHomebrewRemoval {
+            AppUninstaller.shared.removeSelectedWithHomebrew(confirmation: confirmation)
+        }
+        pendingHomebrewRemoval = nil
         mode = .uninstallReview(entryID: entryID)
         refreshPanelLayout()
     }
@@ -2358,8 +2461,6 @@ final class CommandBarService: ObservableObject {
                 queryHabitStore.record(preparedQuery: prepared,
                                        resultID: entry.id,
                                        now: now)
-                UserDefaults.standard.set(CommandBarQueryHabits.encode(queryHabitStore.store),
-                                          forKey: DefaultsKey.commandBarQueryHabits)
             }
         }
     }
@@ -2465,15 +2566,22 @@ final class CommandBarService: ObservableObject {
     private func loadAppsIfNeeded(for id: UUID) {
         guard AppFeature.commandBar.isAvailable, !appsLoading else { return }
         appsLoading = true
+        let listsUninstallable = AppFeature.uninstaller.isAvailable
+            && UserDefaults.standard.bool(forKey: DefaultsKey.uninstallerCommandBarEnabled)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let apps = SpotlightNames.enriching(InstalledApps.installedApplications(
                 includeSystemApplications: true,
                 spotlightPaths: Self.spotlightApplicationPaths()))
+            // The uninstall browse offers only what the uninstaller will
+            // take, and its check reads the disk for every app.
+            let uninstallable = listsUninstallable
+                ? UninstallerSupport.acceptedApplicationIDs(apps) : []
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.appsLoading = false
                 guard AppFeature.commandBar.isAvailable else { return }
                 self.cachedApps = apps
+                self.uninstallableAppIDs = uninstallable
                 self.rebuildRunningEntries()
                 if let key = self.pendingAppShortcut.take(in: self.rowShortcuts,
                                                           isAvailable: AppFeature.commandBar.isAvailable) {
@@ -2858,7 +2966,7 @@ final class CommandBarService: ObservableObject {
 
     /// Borderless panels refuse key status by default, and the bar's field
     /// needs it for typing while the target app stays active.
-    private final class KeyableBarPanel: NSPanel {
+    private final class KeyableBarPanel: OverlayPanel {
         override var canBecomeKey: Bool { true }
     }
 
@@ -3039,8 +3147,14 @@ final class CommandBarService: ObservableObject {
                 }
             }
             // In a checklist, native controls own Tab, Space and arrows.
-            // Only Return in the search field means the flow's primary action.
+            // Only Return in the search field means the flow's primary action,
+            // and only a fresh press: a Return still held from the app list
+            // must not confirm the review the moment its scan finishes.
             if self.mode.isUninstallFlow {
+                if event.isARepeat,
+                   Int(event.keyCode) == kVK_Return || Int(event.keyCode) == kVK_ANSI_KeypadEnter {
+                    return nil
+                }
                 return self.handleUninstallKey(Int(event.keyCode),
                                                searchFieldFocused: panel.firstResponder is NSTextView)
                     ? nil : event

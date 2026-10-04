@@ -42,7 +42,8 @@ final class RecentCaptureService: ObservableObject {
             && UserDefaults.standard.bool(forKey: DefaultsKey.recentCapturesShortcutEnabled)
         let shortcut = GlobalShortcut.saved(for: DefaultsKey.recentCapturesShortcut,
                                             fallback: .recentCapturesDefault)
-        shortcutRegistrationFailed = !hotkey.sync(enabled: enabled, shortcut: shortcut)
+        shortcutRegistrationFailed = !hotkey.sync(enabled: enabled, shortcut: shortcut,
+                                                  storageKey: DefaultsKey.recentCapturesShortcut)
         if !available { hideHistoryWindow() }
     }
 
@@ -84,7 +85,7 @@ final class RecentCaptureService: ObservableObject {
         panel?.orderOut(nil)
     }
 
-    private final class KeyableHistoryPanel: NSPanel {
+    private final class KeyableHistoryPanel: OverlayPanel {
         override var canBecomeKey: Bool { true }
     }
 

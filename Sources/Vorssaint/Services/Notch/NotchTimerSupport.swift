@@ -57,6 +57,27 @@ struct NotchPomodoroConfiguration: Equatable {
     }
 }
 
+/// Every value accepted by the saved configuration remains selectable.
+enum NotchPomodoroOption: CaseIterable, Identifiable {
+    case focus, shortBreak, longBreak, longBreakInterval, totalSessions
+    var id: Self { self }
+
+    var range: ClosedRange<Int> {
+        switch self {
+        case .focus: return NotchPomodoroConfiguration.focusRange
+        case .shortBreak, .longBreak: return NotchPomodoroConfiguration.breakRange
+        case .longBreakInterval, .totalSessions: return NotchPomodoroConfiguration.sessionRange
+        }
+    }
+
+    var isDuration: Bool {
+        switch self {
+        case .focus, .shortBreak, .longBreak: return true
+        case .longBreakInterval, .totalSessions: return false
+        }
+    }
+}
+
 /// The anchor is an injected, continuous time coordinate: a countdown's
 /// deadline, or the instant a stopwatch read zero. UI refreshes and delayed
 /// callbacks never subtract ticks, so sleep and busy frames cannot drift.
@@ -160,14 +181,21 @@ enum NotchTimerSupport {
             && NotchSupport.modules(in: defaults).contains(.timer)
     }
 
-    /// The mode pill sizes each label to its text, so the three modes fit the
-    /// narrowest island in every language where equal segments would not.
+    /// The modes read as three words in a row, the current one underlined,
+    /// each as wide as its text, so the three fit the narrowest island in
+    /// every language where equal segments would not.
     enum ModePicker {
-        static let height: CGFloat = 30
-        static let inset: CGFloat = 3
-        static let spacing: CGFloat = 2
+        static let height: CGFloat = 24
+        static let spacing: CGFloat = 14
         static let labelSize: CGFloat = 12
-        static let labelPadding: CGFloat = 10
+        static let labelPadding: CGFloat = 4
+    }
+
+    /// The start capsule beside the mode row; the test measures both against the
+    /// width the wide layout starts at, in every language.
+    enum StartButton {
+        static let labelSize: CGFloat = 14
+        static let padding: CGFloat = 18
     }
 
     static let timerLimit: TimeInterval = 180 * 60
@@ -223,6 +251,15 @@ enum NotchTimerSupport {
         session.countsUp ? stopwatchText(session.reading(at: now)) : clockText(session.reading(at: now))
     }
 
+    /// What a clock's digits roll on. The closed island can show a clock for
+    /// hours, and rolling every second kept it animating a third of the time,
+    /// at about ten times the energy of a clock that changes in place. There
+    /// the seconds change in place and the rest rolls: "12:04" rolls as "12".
+    static func rollingValue(_ value: String, everySecond: Bool) -> String {
+        guard !everySecond, let colon = value.lastIndex(of: ":") else { return value }
+        return String(value[..<colon])
+    }
+
     static func compactText(for session: NotchTimerSession, at now: TimeInterval, locale: Locale) -> String {
         let reading = session.reading(at: now)
         if session.countsUp { return compactStopwatchText(reading) }
@@ -255,5 +292,20 @@ enum NotchTimerSupport {
         return Duration.seconds(seconds).formatted(.units(
             allowed: units, width: .narrow,
             fractionalPart: .hide(rounded: .down)).locale(locale))
+    }
+
+    // MARK: Strip
+
+    /// A wing is never narrower than the music strip's; the longest readings
+    /// keep the width the strip always had.
+    static let stripWingRange: ClosedRange<CGFloat> = 44...64
+    /// Air between the camera and what sits beside it.
+    static let stripCameraGap: CGFloat = 6
+
+    static func stripTextSize(height: CGFloat) -> CGFloat { min(16, height - 6) }
+    /// The mark takes the strip's height less an even gap above and below.
+    static func stripIconSize(height: CGFloat) -> CGFloat { min(20, height - NotchLayout.compactEdgeGap * 2) }
+    static func stripAgentMarkSize(height: CGFloat, working: Int) -> CGFloat {
+        min(working > 1 ? 11 : 14, max(8, height - NotchLayout.compactEdgeGap * 2 - 4))
     }
 }
