@@ -13,6 +13,7 @@ struct AppUpdateStrings {
     let lastCheckFormat: String
     let neverChecked: String
     let upToDate: String
+    let partialUpToDate: String
     let coverageNote: String
     let selectAll: String
     let clearSelection: String
@@ -44,6 +45,14 @@ struct AppUpdateStrings {
     let includeOnlineCaption: String
     let incompleteCheck: String
     let onlineUnavailable: String
+    let skipVersionFormat: String
+    let excludeApp: String
+    let rulesTitle: String
+    let skippedVersionFormat: String
+    let excludedApp: String
+    let removeRule: String
+    let rulesHint: String
+    let noVisibleUpdates: String
 }
 
 extension FeatureStrings {
@@ -54,6 +63,7 @@ extension FeatureStrings {
         case .tr: return .tr
         case .ru: return .ru
         case .es: return .es
+        case .sk: return .sk
         case .de: return .de
         case .fr: return .fr
         case .it: return .it
@@ -62,6 +72,7 @@ extension FeatureStrings {
         case .zhHans: return .zhHans
         case .zhTW: return .zhTW
         case .zhHK: return .zhHK
+        case .uk: return .uk
         }
     }
 }
@@ -77,6 +88,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Last checked %@",
         neverChecked: "Not checked yet",
         upToDate: "No updates found",
+        partialUpToDate: "No updates found in this partial check",
         coverageNote: "Checks the original sources of installed apps and a public catalog. Updates install through their original source.",
         selectAll: "Select all",
         clearSelection: "Clear",
@@ -105,8 +117,16 @@ extension AppUpdateStrings {
         openAppHint: "Opens the app so its own updater can finish",
         includeOnlineToggle: "Include other installed apps",
         includeOnlineCaption: "Checks directly with app developers when supported, then uses a public catalog. The app’s own updater installs the update.",
-        incompleteCheck: "Some apps could not be checked",
-        onlineUnavailable: "The online check could not be completed. Other results are still shown."
+        incompleteCheck: "Check incomplete",
+        onlineUnavailable: "The online check could not be completed. Other results are still shown.",
+        skipVersionFormat: "Skip version %@",
+        excludeApp: "Don’t check this app",
+        rulesTitle: "Update rules",
+        skippedVersionFormat: "Skipped version %@",
+        excludedApp: "Not checked until this rule is removed",
+        removeRule: "Remove rule",
+        rulesHint: "Skipping a version still allows newer releases. After removing an app exclusion, use Check now to refresh it.",
+        noVisibleUpdates: "No updates outside your rules"
     )
 
     static let ptBR = AppUpdateStrings(
@@ -119,6 +139,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Última verificação %@",
         neverChecked: "Ainda não verificado",
         upToDate: "Nenhuma atualização encontrada",
+        partialUpToDate: "Nenhuma atualização encontrada nesta verificação parcial",
         coverageNote: "Verifica as fontes originais dos apps instalados e um catálogo público. Cada atualização é instalada pela fonte original.",
         selectAll: "Selecionar tudo",
         clearSelection: "Limpar",
@@ -147,8 +168,16 @@ extension AppUpdateStrings {
         openAppHint: "Abre o app para que o atualizador dele conclua",
         includeOnlineToggle: "Incluir outros apps instalados",
         includeOnlineCaption: "Consulta diretamente os desenvolvedores quando possível e usa um catálogo público como complemento. O próprio app instala a atualização.",
-        incompleteCheck: "Não foi possível verificar alguns apps",
-        onlineUnavailable: "A verificação online não pôde ser concluída. Os demais resultados continuam visíveis."
+        incompleteCheck: "Verificação incompleta",
+        onlineUnavailable: "A verificação online não pôde ser concluída. Os demais resultados continuam visíveis.",
+        skipVersionFormat: "Ignorar versão %@",
+        excludeApp: "Não verificar este app",
+        rulesTitle: "Regras de atualização",
+        skippedVersionFormat: "Versão %@ ignorada",
+        excludedApp: "Não verificado até remover esta regra",
+        removeRule: "Remover regra",
+        rulesHint: "Ignorar uma versão não oculta versões mais novas. Após remover uma exclusão, use Verificar agora para atualizar a lista.",
+        noVisibleUpdates: "Nenhuma atualização fora das suas regras"
     )
 
     static let tr = AppUpdateStrings(
@@ -161,6 +190,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Son denetleme %@",
         neverChecked: "Henüz denetlenmedi",
         upToDate: "Güncelleme bulunamadı",
+        partialUpToDate: "Bu kısmi denetimde güncelleme bulunamadı",
         coverageNote: "Yüklü uygulamaların özgün kaynaklarını ve herkese açık bir kataloğu denetler. Güncellemeler özgün kaynaklarından yüklenir.",
         selectAll: "Tümünü seç",
         clearSelection: "Temizle",
@@ -189,8 +219,16 @@ extension AppUpdateStrings {
         openAppHint: "Kendi güncelleyicisinin tamamlaması için uygulamayı açar",
         includeOnlineToggle: "Yüklü diğer uygulamaları dahil et",
         includeOnlineCaption: "Desteklendiğinde doğrudan uygulama geliştiricilerine danışır, ardından herkese açık bir katalog kullanır. Güncellemeyi uygulamanın kendisi yükler.",
-        incompleteCheck: "Bazı uygulamalar denetlenemedi",
-        onlineUnavailable: "Çevrimiçi denetleme tamamlanamadı. Diğer sonuçlar gösterilmeye devam ediyor."
+        incompleteCheck: "Denetim tamamlanamadı",
+        onlineUnavailable: "Çevrimiçi denetleme tamamlanamadı. Diğer sonuçlar gösterilmeye devam ediyor.",
+        skipVersionFormat: "%@ sürümünü atla",
+        excludeApp: "Bu uygulamayı denetleme",
+        rulesTitle: "Güncelleme kuralları",
+        skippedVersionFormat: "Atlanan sürüm: %@",
+        excludedApp: "Bu kural kaldırılana kadar denetlenmez",
+        removeRule: "Kuralı kaldır",
+        rulesHint: "Bir sürümü atlamak daha yeni sürümleri gizlemez. Uygulama hariç tutma kuralını kaldırdıktan sonra Şimdi denetle ile listeyi yenile.",
+        noVisibleUpdates: "Kurallarının dışında güncelleme yok"
     )
 
     static let ru = AppUpdateStrings(
@@ -203,6 +241,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Последняя проверка %@",
         neverChecked: "Ещё не проверялось",
         upToDate: "Обновления не найдены",
+        partialUpToDate: "При частичной проверке обновления не найдены",
         coverageNote: "Проверяет исходные источники установленных приложений и общедоступный каталог. Обновления устанавливаются из исходного источника.",
         selectAll: "Выбрать все",
         clearSelection: "Снять выбор",
@@ -231,8 +270,16 @@ extension AppUpdateStrings {
         openAppHint: "Открывает приложение, чтобы его средство обновления завершило работу",
         includeOnlineToggle: "Включать другие установленные приложения",
         includeOnlineCaption: "По возможности проверяет обновления напрямую у разработчиков, затем использует общедоступный каталог. Обновление устанавливает само приложение.",
-        incompleteCheck: "Некоторые приложения не удалось проверить",
-        onlineUnavailable: "Онлайн-проверку не удалось завершить. Остальные результаты по-прежнему показаны."
+        incompleteCheck: "Проверка не завершена",
+        onlineUnavailable: "Онлайн-проверку не удалось завершить. Остальные результаты по-прежнему показаны.",
+        skipVersionFormat: "Пропустить версию %@",
+        excludeApp: "Не проверять это приложение",
+        rulesTitle: "Правила обновлений",
+        skippedVersionFormat: "Пропущена версия %@",
+        excludedApp: "Не проверяется до удаления правила",
+        removeRule: "Удалить правило",
+        rulesHint: "Пропуск версии не скрывает новые выпуски. После удаления исключения нажмите «Проверить сейчас», чтобы обновить список.",
+        noVisibleUpdates: "Обновлений вне ваших правил нет"
     )
 
     static let es = AppUpdateStrings(
@@ -245,6 +292,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Última búsqueda %@",
         neverChecked: "Todavía sin buscar",
         upToDate: "No se encontraron actualizaciones",
+        partialUpToDate: "No se encontraron actualizaciones en esta revisión parcial",
         coverageNote: "Revisa las fuentes originales de las apps instaladas y un catálogo público. Cada actualización se instala desde su fuente original.",
         selectAll: "Seleccionar todo",
         clearSelection: "Limpiar",
@@ -273,8 +321,67 @@ extension AppUpdateStrings {
         openAppHint: "Abre la app para que su propio actualizador pueda terminar",
         includeOnlineToggle: "Incluir otras apps instaladas",
         includeOnlineCaption: "Consulta directamente a los desarrolladores cuando es posible y complementa la búsqueda con un catálogo público. La propia app instala la actualización.",
-        incompleteCheck: "No se pudieron revisar algunas apps",
-        onlineUnavailable: "No se pudo completar la revisión en línea. Los demás resultados siguen visibles."
+        incompleteCheck: "Revisión incompleta",
+        onlineUnavailable: "No se pudo completar la revisión en línea. Los demás resultados siguen visibles.",
+        skipVersionFormat: "Omitir versión %@",
+        excludeApp: "No comprobar esta app",
+        rulesTitle: "Reglas de actualización",
+        skippedVersionFormat: "Versión %@ omitida",
+        excludedApp: "No se comprueba hasta eliminar esta regla",
+        removeRule: "Eliminar regla",
+        rulesHint: "Omitir una versión no oculta versiones posteriores. Tras eliminar una exclusión, usa Buscar ahora para actualizar la lista.",
+        noVisibleUpdates: "No hay actualizaciones fuera de tus reglas"
+    )
+
+    static let sk = AppUpdateStrings(
+        pageTitle: "Aktualizácie aplikácií",
+        hubDescription: "Vyhľadajte a nainštalujte aktualizácie svojich aplikácií",
+        caption: "Hľadá novšie verzie aplikácií na tomto Macu a pomôže vám dokončiť každú aktualizáciu z jej pôvodného zdroja.",
+        panelCaption: "Zistite, ktoré aplikácie majú novšiu verziu",
+        checkNow: "Skontrolovať teraz",
+        checking: "Kontroluje sa",
+        lastCheckFormat: "Posledná kontrola %@",
+        neverChecked: "Zatiaľ neskontrolované",
+        upToDate: "Nenašli sa žiadne aktualizácie",
+        partialUpToDate: "Pri tejto čiastočnej kontrole sa nenašli žiadne aktualizácie",
+        coverageNote: "Kontroluje pôvodné zdroje nainštalovaných aplikácií a verejný katalóg. Aktualizácie sa inštalujú cez pôvodný zdroj.",
+        selectAll: "Vybrať všetko",
+        clearSelection: "Zrušiť výber",
+        updateSelectedFormat: "Aktualizovať %d",
+        updateOne: "Aktualizovať",
+        openAppStore: "Otvoriť App Store",
+        appStoreBadge: "App Store",
+        storeHint: "Otvorí App Store, kde sa táto aktualizácia nainštaluje",
+        frequencyLabel: "Kontrolovať na pozadí",
+        frequencyOff: "Vypnuté",
+        frequencyDaily: "Každý deň",
+        frequencyWeekly: "Každý týždeň",
+        nextCheckFormat: "Ďalšia kontrola %@",
+        notifyToggle: "Upozorniť ma, keď má aplikácia aktualizáciu",
+        includeStoreToggle: "Zahrnúť aplikácie z App Store",
+        includeStoreCaption: "Kontroluje verzie v obchode podľa regiónu tohto Macu. Tieto aktualizácie inštaluje Apple.",
+        packageMissing: "Homebrew nie je nainštalovaný, takže aplikácie sa odtiaľto zatiaľ nedajú aktualizovať.",
+        notificationBodyFormat: "Počet aplikácií s novšou verziou: %@.",
+        notificationBodyOne: "Jedna aplikácia má novšiu verziu.",
+        showInPanel: "Zobraziť v paneli",
+        homebrewBadge: "Homebrew",
+        sourcesTitle: "Zdroje",
+        includeHomebrewToggle: "Zahrnúť aplikácie Homebrew",
+        onlineBadge: "Online",
+        openApp: "Otvoriť",
+        openAppHint: "Otvorí aplikáciu, aby jej vlastný aktualizátor mohol dokončiť aktualizáciu",
+        includeOnlineToggle: "Zahrnúť ostatné nainštalované aplikácie",
+        includeOnlineCaption: "Pri podpore kontroluje priamo u vývojárov a dopĺňa to verejným katalógom. Aktualizáciu inštaluje samotná aplikácia.",
+        incompleteCheck: "Kontrola nedokončená",
+        onlineUnavailable: "Online kontrolu sa nepodarilo dokončiť. Ostatné výsledky sa aj tak zobrazujú.",
+        skipVersionFormat: "Preskočiť verziu %@",
+        excludeApp: "Nekontrolovať túto aplikáciu",
+        rulesTitle: "Pravidlá aktualizácií",
+        skippedVersionFormat: "Preskočená verzia %@",
+        excludedApp: "Nekontroluje sa do odstránenia pravidla",
+        removeRule: "Odstrániť pravidlo",
+        rulesHint: "Preskočenie verzie neskryje novšie vydania. Po odstránení výnimky obnovte zoznam cez Skontrolovať teraz.",
+        noVisibleUpdates: "Žiadne aktualizácie mimo vašich pravidiel"
     )
 
     static let de = AppUpdateStrings(
@@ -287,6 +394,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Zuletzt geprüft %@",
         neverChecked: "Noch nicht geprüft",
         upToDate: "Keine Updates gefunden",
+        partialUpToDate: "Bei dieser teilweisen Prüfung wurden keine Updates gefunden",
         coverageNote: "Prüft die ursprünglichen Quellen installierter Apps und einen öffentlichen Katalog. Updates werden über die ursprüngliche Quelle installiert.",
         selectAll: "Alle auswählen",
         clearSelection: "Aufheben",
@@ -315,8 +423,16 @@ extension AppUpdateStrings {
         openAppHint: "Öffnet die App, damit ihr eigener Updater abschließen kann",
         includeOnlineToggle: "Andere installierte Apps einbeziehen",
         includeOnlineCaption: "Prüft nach Möglichkeit direkt bei den Entwicklern und ergänzt die Suche mit einem öffentlichen Katalog. Die App selbst installiert das Update.",
-        incompleteCheck: "Einige Apps konnten nicht geprüft werden",
-        onlineUnavailable: "Die Online-Prüfung konnte nicht abgeschlossen werden. Andere Ergebnisse werden weiterhin angezeigt."
+        incompleteCheck: "Prüfung unvollständig",
+        onlineUnavailable: "Die Online-Prüfung konnte nicht abgeschlossen werden. Andere Ergebnisse werden weiterhin angezeigt.",
+        skipVersionFormat: "Version %@ überspringen",
+        excludeApp: "Diese App nicht prüfen",
+        rulesTitle: "Update-Regeln",
+        skippedVersionFormat: "Version %@ übersprungen",
+        excludedApp: "Bis zum Entfernen dieser Regel nicht geprüft",
+        removeRule: "Regel entfernen",
+        rulesHint: "Eine übersprungene Version verbirgt keine neueren Versionen. Nach dem Entfernen eines App-Ausschlusses mit Jetzt prüfen aktualisieren.",
+        noVisibleUpdates: "Keine Updates außerhalb deiner Regeln"
     )
 
     static let fr = AppUpdateStrings(
@@ -329,6 +445,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Dernière vérification %@",
         neverChecked: "Pas encore vérifié",
         upToDate: "Aucune mise à jour trouvée",
+        partialUpToDate: "Aucune mise à jour trouvée lors de cette vérification partielle",
         coverageNote: "Vérifie les sources d’origine des apps installées et un catalogue public. Les mises à jour s’installent depuis leur source d’origine.",
         selectAll: "Tout sélectionner",
         clearSelection: "Effacer",
@@ -357,8 +474,16 @@ extension AppUpdateStrings {
         openAppHint: "Ouvre l’app pour permettre à son propre outil de mise à jour de terminer",
         includeOnlineToggle: "Inclure les autres apps installées",
         includeOnlineCaption: "Consulte directement les développeurs lorsque c’est possible, puis complète la recherche avec un catalogue public. L’app installe elle-même la mise à jour.",
-        incompleteCheck: "Certaines apps n’ont pas pu être vérifiées",
-        onlineUnavailable: "La vérification en ligne n’a pas pu aboutir. Les autres résultats restent affichés."
+        incompleteCheck: "Vérification incomplète",
+        onlineUnavailable: "La vérification en ligne n’a pas pu aboutir. Les autres résultats restent affichés.",
+        skipVersionFormat: "Ignorer la version %@",
+        excludeApp: "Ne pas vérifier cette app",
+        rulesTitle: "Règles de mise à jour",
+        skippedVersionFormat: "Version %@ ignorée",
+        excludedApp: "Non vérifiée jusqu’au retrait de cette règle",
+        removeRule: "Retirer la règle",
+        rulesHint: "Ignorer une version ne masque pas les suivantes. Après avoir retiré une exclusion, utilisez Vérifier maintenant pour actualiser la liste.",
+        noVisibleUpdates: "Aucune mise à jour en dehors de vos règles"
     )
 
     static let it = AppUpdateStrings(
@@ -371,6 +496,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "Ultimo controllo %@",
         neverChecked: "Non ancora controllato",
         upToDate: "Nessun aggiornamento trovato",
+        partialUpToDate: "Nessun aggiornamento trovato in questa verifica parziale",
         coverageNote: "Controlla le fonti originali delle app installate e un catalogo pubblico. Gli aggiornamenti vengono installati dalla fonte originale.",
         selectAll: "Seleziona tutto",
         clearSelection: "Azzera",
@@ -399,8 +525,16 @@ extension AppUpdateStrings {
         openAppHint: "Apre l’app per consentire al suo programma di aggiornamento di terminare",
         includeOnlineToggle: "Includi le altre app installate",
         includeOnlineCaption: "Consulta direttamente gli sviluppatori quando possibile e integra la ricerca con un catalogo pubblico. L’app installa il proprio aggiornamento.",
-        incompleteCheck: "Non è stato possibile controllare alcune app",
-        onlineUnavailable: "Non è stato possibile completare il controllo online. Gli altri risultati restano visibili."
+        incompleteCheck: "Verifica incompleta",
+        onlineUnavailable: "Non è stato possibile completare il controllo online. Gli altri risultati restano visibili.",
+        skipVersionFormat: "Salta la versione %@",
+        excludeApp: "Non controllare questa app",
+        rulesTitle: "Regole degli aggiornamenti",
+        skippedVersionFormat: "Versione %@ saltata",
+        excludedApp: "Non controllata finché la regola non viene rimossa",
+        removeRule: "Rimuovi regola",
+        rulesHint: "Saltare una versione non nasconde quelle successive. Dopo aver rimosso un’esclusione, usa Controlla ora per aggiornare l’elenco.",
+        noVisibleUpdates: "Nessun aggiornamento al di fuori delle tue regole"
     )
 
     static let ja = AppUpdateStrings(
@@ -413,6 +547,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "前回の確認 %@",
         neverChecked: "まだ確認していません",
         upToDate: "アップデートは見つかりませんでした",
+        partialUpToDate: "確認できた範囲ではアップデートは見つかりませんでした",
         coverageNote: "インストール済みAppの配布元と公開カタログを確認します。アップデートは元の配布元からインストールされます。",
         selectAll: "すべて選択",
         clearSelection: "選択解除",
@@ -441,8 +576,16 @@ extension AppUpdateStrings {
         openAppHint: "Appを開き、内蔵のアップデート機能で完了します",
         includeOnlineToggle: "その他のインストール済みAppを含める",
         includeOnlineCaption: "対応している場合は開発元に直接確認し、公開カタログで検索を補います。アップデートはApp自身がインストールします。",
-        incompleteCheck: "一部のAppを確認できませんでした",
-        onlineUnavailable: "オンライン確認を完了できませんでした。その他の結果は引き続き表示されます。"
+        incompleteCheck: "確認が完了していません",
+        onlineUnavailable: "オンライン確認を完了できませんでした。その他の結果は引き続き表示されます。",
+        skipVersionFormat: "バージョン%@をスキップ",
+        excludeApp: "このAppを確認しない",
+        rulesTitle: "アップデートのルール",
+        skippedVersionFormat: "スキップしたバージョン: %@",
+        excludedApp: "このルールを削除するまで確認しません",
+        removeRule: "ルールを削除",
+        rulesHint: "バージョンをスキップしても新しいバージョンは表示されます。Appの除外を解除した後は「今すぐ確認」で更新してください。",
+        noVisibleUpdates: "ルールの対象外のアップデートはありません"
     )
 
     static let ko = AppUpdateStrings(
@@ -455,6 +598,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "마지막 확인 %@",
         neverChecked: "아직 확인하지 않음",
         upToDate: "업데이트를 찾지 못했습니다",
+        partialUpToDate: "확인된 범위에서 업데이트를 찾지 못했습니다",
         coverageNote: "설치된 앱의 원래 배포처와 공개 카탈로그를 확인합니다. 업데이트는 원래 배포처를 통해 설치됩니다.",
         selectAll: "모두 선택",
         clearSelection: "선택 해제",
@@ -483,8 +627,16 @@ extension AppUpdateStrings {
         openAppHint: "앱을 열어 자체 업데이트 기능으로 완료합니다",
         includeOnlineToggle: "설치된 다른 앱 포함",
         includeOnlineCaption: "지원되는 경우 개발자에게 직접 확인하고 공개 카탈로그로 검색을 보완합니다. 업데이트는 앱 자체에서 설치합니다.",
-        incompleteCheck: "일부 앱을 확인하지 못했습니다",
-        onlineUnavailable: "온라인 확인을 완료하지 못했습니다. 다른 결과는 계속 표시됩니다."
+        incompleteCheck: "확인이 완료되지 않았습니다",
+        onlineUnavailable: "온라인 확인을 완료하지 못했습니다. 다른 결과는 계속 표시됩니다.",
+        skipVersionFormat: "%@ 버전 건너뛰기",
+        excludeApp: "이 앱 확인 안 함",
+        rulesTitle: "업데이트 규칙",
+        skippedVersionFormat: "건너뛴 버전: %@",
+        excludedApp: "이 규칙을 제거할 때까지 확인하지 않음",
+        removeRule: "규칙 제거",
+        rulesHint: "버전을 건너뛰어도 새 버전은 표시됩니다. 앱 제외를 해제한 후 지금 확인으로 목록을 새로 고치세요.",
+        noVisibleUpdates: "규칙 외의 업데이트가 없습니다"
     )
 
     static let zhHans = AppUpdateStrings(
@@ -497,6 +649,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "上次检查 %@",
         neverChecked: "尚未检查",
         upToDate: "未找到更新",
+        partialUpToDate: "本次部分检查未发现更新",
         coverageNote: "检查已安装 App 的原始来源和公开目录。更新通过原始来源安装。",
         selectAll: "全选",
         clearSelection: "清除",
@@ -525,8 +678,16 @@ extension AppUpdateStrings {
         openAppHint: "打开 App，让它自己的更新程序完成更新",
         includeOnlineToggle: "包含其他已安装的 App",
         includeOnlineCaption: "在支持时直接向开发者查询，并通过公开目录补充搜索。更新由 App 自身安装。",
-        incompleteCheck: "部分 App 无法检查",
-        onlineUnavailable: "无法完成在线检查。其他结果仍会显示。"
+        incompleteCheck: "检查未完成",
+        onlineUnavailable: "无法完成在线检查。其他结果仍会显示。",
+        skipVersionFormat: "跳过版本 %@",
+        excludeApp: "不检查此 App",
+        rulesTitle: "更新规则",
+        skippedVersionFormat: "已跳过版本 %@",
+        excludedApp: "移除此规则前不检查",
+        removeRule: "移除规则",
+        rulesHint: "跳过某个版本不会隐藏更新版本。移除 App 排除规则后，请使用“立即检查”刷新列表。",
+        noVisibleUpdates: "规则之外没有更新"
     )
 
     static let zhTW = AppUpdateStrings(
@@ -539,6 +700,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "上次檢查 %@",
         neverChecked: "尚未檢查",
         upToDate: "找不到更新",
+        partialUpToDate: "本次部分檢查未找到更新",
         coverageNote: "檢查已安裝 App 的原始來源與公開目錄。更新透過原始來源安裝。",
         selectAll: "全選",
         clearSelection: "清除",
@@ -567,8 +729,16 @@ extension AppUpdateStrings {
         openAppHint: "打開 App，讓它自己的更新程式完成更新",
         includeOnlineToggle: "包含其他已安裝的 App",
         includeOnlineCaption: "支援時直接向開發者查詢，並透過公開目錄補充搜尋。更新由 App 自行安裝。",
-        incompleteCheck: "部分 App 無法檢查",
-        onlineUnavailable: "無法完成線上檢查。其他結果仍會顯示。"
+        incompleteCheck: "檢查未完成",
+        onlineUnavailable: "無法完成線上檢查。其他結果仍會顯示。",
+        skipVersionFormat: "略過版本 %@",
+        excludeApp: "不檢查此 App",
+        rulesTitle: "更新規則",
+        skippedVersionFormat: "已略過版本 %@",
+        excludedApp: "移除此規則前不檢查",
+        removeRule: "移除規則",
+        rulesHint: "略過某個版本不會隱藏更新版本。移除 App 排除規則後，請使用「立即檢查」重新整理列表。",
+        noVisibleUpdates: "規則之外沒有更新"
     )
 
     static let zhHK = AppUpdateStrings(
@@ -581,6 +751,7 @@ extension AppUpdateStrings {
         lastCheckFormat: "上次檢查 %@",
         neverChecked: "尚未檢查",
         upToDate: "搵唔到更新",
+        partialUpToDate: "今次部分檢查未搵到更新",
         coverageNote: "檢查已安裝 App 嘅原始來源同公開目錄。更新由原始來源安裝。",
         selectAll: "全選",
         clearSelection: "清除",
@@ -609,7 +780,65 @@ extension AppUpdateStrings {
         openAppHint: "打開 App，等佢自己嘅更新程式完成更新",
         includeOnlineToggle: "包含其他已安裝嘅 App",
         includeOnlineCaption: "支援時會直接向開發者查詢，再用公開目錄補充搜尋。更新由 App 自行安裝。",
-        incompleteCheck: "部分 App 無法檢查",
-        onlineUnavailable: "無法完成網上檢查。其他結果仍然會顯示。"
+        incompleteCheck: "檢查未完成",
+        onlineUnavailable: "無法完成網上檢查。其他結果仍然會顯示。",
+        skipVersionFormat: "略過版本 %@",
+        excludeApp: "唔檢查呢個 App",
+        rulesTitle: "更新規則",
+        skippedVersionFormat: "已略過版本 %@",
+        excludedApp: "移除呢條規則前唔會檢查",
+        removeRule: "移除規則",
+        rulesHint: "略過某個版本唔會隱藏更新版本。移除 App 排除規則後，請用「立即檢查」更新列表。",
+        noVisibleUpdates: "規則以外冇更新"
+    )
+    static let uk = AppUpdateStrings(
+        pageTitle: "Оновлення програм",
+        hubDescription: "Знаходьте та встановлюйте оновлення для ваших програм",
+        caption: "Шукає новіші версії програм на цьому Mac та допомагає завершити кожне оновлення з його першоджерела.",
+        panelCaption: "Подивіться, які програми мають новішу версію",
+        checkNow: "Перевірити зараз",
+        checking: "Перевірка",
+        lastCheckFormat: "Найновіша перевірка %@",
+        neverChecked: "Ще не перевірено",
+        upToDate: "Оновлень не знайдено",
+        partialUpToDate: "При частковій перевірці оновлень не знайдено",
+        coverageNote: "Перевіряє початкові джерела встановлених програм і публічний каталог. Оновлення встановлюються через їхнє початкове джерело.",
+        selectAll: "Вибрати все",
+        clearSelection: "Очистити",
+        updateSelectedFormat: "Оновити %d",
+        updateOne: "Оновити",
+        openAppStore: "Відкрити App Store",
+        appStoreBadge: "App Store",
+        storeHint: "Відкриває App Store, де встановлюється це оновлення",
+        frequencyLabel: "Перевіряти у фоновому режимі",
+        frequencyOff: "Вимкнено",
+        frequencyDaily: "Щодня",
+        frequencyWeekly: "Щотижня",
+        nextCheckFormat: "Наступна перевірка %@",
+        notifyToggle: "Повідомте мене, коли програма має оновлення",
+        includeStoreToggle: "Включити програми з App Store",
+        includeStoreCaption: "Перевіряє версії в магазині для регіону цього Mac. Apple встановлює ці оновлення.",
+        packageMissing: "Homebrew не встановлено, тому програми поки не можна оновити звідси.",
+        notificationBodyFormat: "Програм із новішою версією: %@.",
+        notificationBodyOne: "Одна програма має новішу версію.",
+        showInPanel: "Показати в панелі",
+        homebrewBadge: "Homebrew",
+        sourcesTitle: "Джерела",
+        includeHomebrewToggle: "Включити програми Homebrew",
+        onlineBadge: "Онлайн",
+        openApp: "Відкрити",
+        openAppHint: "Відкриває програму, щоб її власний оновлювач завершив роботу",
+        includeOnlineToggle: "Включити інші встановлені програми",
+        includeOnlineCaption: "Коли підтримується, перевіряє оновлення безпосередньо в розробників програм, а потім використовує публічний каталог. Оновлення встановлює власний механізм програми.",
+        incompleteCheck: "Перевірку не завершено",
+        onlineUnavailable: "Онлайн-перевірку не вдалося завершити. Інші результати все ще показуються.",
+        skipVersionFormat: "Пропустити версію %@",
+        excludeApp: "Не перевіряти цю програму",
+        rulesTitle: "Правила оновлень",
+        skippedVersionFormat: "Пропущена версія %@",
+        excludedApp: "Не перевіряється до видалення правила",
+        removeRule: "Видалити правило",
+        rulesHint: "Пропуск версії не приховує новіші випуски. Після видалення винятку натисніть «Перевірити зараз», щоб оновити список.",
+        noVisibleUpdates: "Немає оновлень поза вашими правилами"
     )
 }
