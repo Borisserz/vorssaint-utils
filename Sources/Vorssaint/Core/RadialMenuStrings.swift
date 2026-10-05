@@ -338,7 +338,7 @@ extension RadialMenuFeatureStrings {
         hideListButton: "Ocultar lista",
         trackpadTapLabel: "Abrir com um toque de quatro dedos",
         trackpadTapConflict: "O botão do meio já usa o toque de quatro dedos, então o toque não abre esta roda.",
-        profileNoTrigger: "Escolher um perfil aqui só o edita. Dê a este um atalho, um botão do mouse ou o toque de quatro dedos abaixo para abri-lo."
+        profileNoTrigger: "Escolher um perfil aqui serve só para editá-lo. Para abrir este perfil, dê a ele um atalho, um botão do mouse ou o toque de quatro dedos abaixo."
     )
 
     static let tr = RadialMenuFeatureStrings(
@@ -443,7 +443,7 @@ extension RadialMenuFeatureStrings {
         hideListButton: "Listeyi gizle",
         trackpadTapLabel: "Dört parmakla dokunarak aç",
         trackpadTapConflict: "Dört parmakla dokunma zaten orta tıklamaya ayrılmış, bu yüzden dokunma bu çarkı açmaz.",
-        profileNoTrigger: "Burada bir profil seçmek yalnızca onu düzenler. Açmak için bu profile aşağıdan bir kısayol, bir fare düğmesi veya dört parmakla dokunma verin."
+        profileNoTrigger: "Burada bir profil seçmek yalnızca onu düzenlemenizi sağlar. Açmak için bu profile aşağıdan bir kısayol, bir fare düğmesi veya dört parmakla dokunma verin."
     )
 
     static let ru = RadialMenuFeatureStrings(
@@ -653,7 +653,7 @@ extension RadialMenuFeatureStrings {
         hideListButton: "Ocultar lista",
         trackpadTapLabel: "Abrir con un toque de cuatro dedos",
         trackpadTapConflict: "El clic central ya usa el toque de cuatro dedos, así que el toque no abre esta rueda.",
-        profileNoTrigger: "Elegir un perfil aquí solo lo edita. Dale a este un atajo, un botón del ratón o el toque de cuatro dedos de abajo para abrirlo."
+        profileNoTrigger: "Elegir un perfil aquí solo sirve para editarlo. Dale a este un atajo, un botón del ratón o el toque de cuatro dedos de abajo para abrirlo."
     )
 
     static let sk = RadialMenuFeatureStrings(
@@ -758,7 +758,7 @@ extension RadialMenuFeatureStrings {
         hideListButton: "Skryť zoznam",
         trackpadTapLabel: "Otvoriť ťuknutím štyrmi prstami",
         trackpadTapConflict: "Stredné kliknutie už používa ťuknutie štyrmi prstami, takže toto ťuknutie koleso neotvorí.",
-        profileNoTrigger: "Výber profilu tu ho iba upravuje. Aby sa tento profil otváral, priraďte mu nižšie skratku, tlačidlo myši alebo ťuknutie štyrmi prstami."
+        profileNoTrigger: "Tu iba vyberáte profil, ktorý upravujete. Aby sa tento profil otváral, priraďte mu nižšie skratku, tlačidlo myši alebo ťuknutie štyrmi prstami."
     )
 
     static let de = RadialMenuFeatureStrings(
@@ -863,7 +863,7 @@ extension RadialMenuFeatureStrings {
         hideListButton: "Liste ausblenden",
         trackpadTapLabel: "Mit Vier-Finger-Tippen öffnen",
         trackpadTapConflict: "Der Mittelklick nutzt bereits das Vier-Finger-Tippen, daher öffnet das Tippen dieses Rad nicht.",
-        profileNoTrigger: "Die Auswahl hier bearbeitet ein Profil nur. Gib diesem unten einen Kurzbefehl, eine Maustaste oder das Vier-Finger-Tippen, damit es sich öffnet."
+        profileNoTrigger: "Hier wählst du nur das Profil aus, das du bearbeitest. Damit es sich öffnet, gib ihm unten einen Kurzbefehl, eine Maustaste oder das Vier-Finger-Tippen."
     )
 
     static let fr = RadialMenuFeatureStrings(

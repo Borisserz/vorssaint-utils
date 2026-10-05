@@ -334,7 +334,9 @@ struct RadialMenuSettings: View {
             get: { profile.mouseButton },
             set: { newTrigger in
                 guard profiles.indices.contains(pIndex) else { return }
-                profiles[pIndex].mouseButton = newTrigger
+                // One wheel owns each button: claiming it here releases the others.
+                profiles = RadialMenuSupport.assigning(mouseButton: newTrigger,
+                                                       to: profiles[pIndex].id, in: profiles)
                 persist()
                 if RadialMenuMouseTrigger.sanitized(newTrigger) != .off, !permissions.accessibility {
                     permissions.requestAccessibility()
