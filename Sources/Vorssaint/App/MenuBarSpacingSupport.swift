@@ -216,7 +216,7 @@ enum MenuBarSpacingSupport {
     /// - `separateMetrics` keeps the glyph when metrics live in their own
     ///   status items and the main one would otherwise be empty.
     /// - `mustShowForSignal` brings the glyph back while it carries a signal
-    ///   (update available, mic muted indicator).
+    ///   (update available, a running Keep Awake, mic muted indicator).
     static func shouldHideStatusIcon(optionEnabled: Bool,
                                      separateMetrics: Bool,
                                      metricsEnabled: Bool,
